@@ -20,7 +20,7 @@ type Program struct {
 	Statements []Statement
 }
 
-func (p *Program) TokeLiteral() string {
+func (p *Program) TokenLiteral() string {
 	if len(p.Statements) > 0 {
 		return p.Statements[0].TokenLiteral()
 	} else {
@@ -28,6 +28,7 @@ func (p *Program) TokeLiteral() string {
 	}
 }
 
+// Statements
 type LetStatement struct {
 	Token token.Token // the token.LET token
 	Name  *Identifier
@@ -39,6 +40,17 @@ func (ls *LetStatement) TokenLiteral() string {
 	return ls.Token.Literal
 }
 
+type ReturnStatement struct {
+	Token       token.Token
+	ReturnValue Expression
+}
+
+func (rs *ReturnStatement) statementNode() {}
+func (rs *ReturnStatement) TokenLiteral() string {
+	return rs.Token.Literal
+}
+
+// Expressions
 type Identifier struct {
 	Token token.Token // the token.IDENT token
 	Value string
