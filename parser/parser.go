@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"strconv"
 
 	"monkey/ast"
 	"monkey/lexer"
@@ -41,8 +42,19 @@ func New(l *lexer.Lexer) *Parser {
 		errors: []string{},
 	}
 
+	// Perhaps it's a "clean" code thing, but I'm confused why you'd use a
+	// register receiver function instead of just defining the map with all
+	// the prefix parsers in it:
+	//
+	// p.prefixParseFns = map[token.TokenType]prefixParseFn{
+	// 	token.IDENT: p.parseIdentifier,
+	// 	token.INT:   p.parseIntegerLiteral,
+	//  ... etc
+	// }
+
 	p.prefixParseFns = make(map[token.TokenType]prefixParseFn)
 	p.registerPrefix(token.IDENT, p.parseIdentifier)
+	p.registerPrefix(token.INT, p.parseIntegerLiteral)
 
 	// Read two tokens, so curToken and peekToken are both set
 	p.nextToken()
@@ -151,6 +163,23 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 
 func (p *Parser) parseIdentifier() ast.Expression {
 	return &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
+}
+
+func (p *Parser) parseIntegerLiteral() ast.Expression {
+	lit := &ast.IntegerLiteral{Token: p.curToken}
+
+	// using 0 as the base means you can use thousand separator _,
+	// and indicate the base with0xFF 0o77 0b11 etc
+	value, err := strconv.ParseInt(p.curToken.Literal, 0, 64)
+	if err != nil {
+		msg := fmt.Sprintf("could not parse %q as integer", p.curToken.Literal)
+		p.errors = append(p.errors, msg)
+		return nil
+	}
+
+	lit.Value = value
+
+	return lit
 }
 
 func (p *Parser) curTokenIs(t token.TokenType) bool {
