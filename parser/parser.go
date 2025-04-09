@@ -124,6 +124,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerPrefix(token.TRUE, p.parseBoolean)
 	p.registerPrefix(token.FALSE, p.parseBoolean)
 	p.registerPrefix(token.LPAREN, p.parseGroupedExpression)
+	p.registerPrefix(token.IF, p.parseIfExpression)
 
 	p.infixParseFns = make(map[token.TokenType]infixParseFn)
 	p.registerInfix(token.PLUS, p.parseInfixExpression)
@@ -317,4 +318,61 @@ func (p *Parser) parseGroupedExpression() ast.Expression {
 	}
 
 	return exp
+}
+
+func (p *Parser) parseIfExpression() ast.Expression {
+	expression := &ast.IfExpression{Token: p.curToken}
+
+	// You could be like Go and make the parentheses optional. Fun to try when finished.
+	if !p.expectPeek(token.LPAREN) {
+		return nil
+	}
+
+	// skip over the LPAREN and parse the expression
+	p.nextToken()
+	expression.Condition = p.parseExpression(LOWEST)
+
+	// Optional RPAREN here then I guess. Advances curToken if it's RPAREN, adds error otherwise.
+	if !p.expectPeek(token.RPAREN) {
+		return nil
+	}
+
+	// Advances curToken if it's LBRACE, adds error otherwise.
+	// What really bugs me is that expectPeek isn't a real peek. If peekToken IS the correct token, expectPeek actually moves the curToken FORWARDS, mutating the state of the parser. I understand it would make things more verbose because you'd have to "else p.nextToken()" everywhere, but I have to keep this fact about peekToken in my brain the entire time.
+	if !p.expectPeek(token.LBRACE) {
+		return nil
+	}
+
+	expression.Consequence = p.parseBlockStatement()
+
+	if p.peekTokenIs(token.ELSE) {
+		p.nextToken()
+	
+		// Advances curToken if it's LBRACE, adds error otherwise.
+		if !p.expectPeek(token.LBRACE) {
+			return nil
+		}
+		
+		expression.Alternative = p.parseBlockStatement()
+	}
+
+	return expression
+}
+
+func (p *Parser) parseBlockStatement() *ast.BlockStatement {
+	block := &ast.BlockStatement{ Token: p.curToken}
+	block.Statements = []ast.Statement{}
+
+	// curToken is LBRACE, advance
+	p.nextToken()
+
+	for !p.curTokenIs(token.RBRACE) && !p.curTokenIs(token.EOF) {
+		stmt := p.parseStatement()
+		if stmt != nil {
+			block.Statements = append(block.Statements, stmt)
+		}
+		p.nextToken()
+	}
+
+	return block
 }
