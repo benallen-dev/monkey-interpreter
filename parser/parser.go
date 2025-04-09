@@ -177,7 +177,13 @@ func (p *Parser) parseLetStatement() *ast.LetStatement {
 	stmt := &ast.LetStatement{Token: p.curToken}
 
 	if !p.expectPeek(token.IDENT) {
-		return nil // should this not raise an error? Right now if it fails it's just silently omitted from program.Statements[]
+		return nil
+
+		// Should this not raise an error? Right now if it fails it's just silently omitted from program.Statements[]
+
+		// Oh, right, expectPeek adds the error to the parser's errors if it fails.
+		// And otherwise, it calls nextToken.
+		// Honestly expectPeek should be called expectAndAdvanceOrOtherwiseAddAnError but that's a bit... Java.
 	}
 
 	stmt.Name = &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
@@ -186,7 +192,7 @@ func (p *Parser) parseLetStatement() *ast.LetStatement {
 		return nil // again, "LET foo" isn't valid Monkey
 	}
 
-	// Skipping expressions
+	// TODO: Skipping expressions until we hit a semicolon
 	for !p.curTokenIs(token.SEMICOLON) {
 		p.nextToken()
 	}
@@ -230,7 +236,10 @@ func (p *Parser) noPrefixParseFnError(t token.TokenType) {
 func (p *Parser) parseExpression(precedence int) ast.Expression {
 	prefix := p.prefixParseFns[p.curToken.Type]
 	if prefix == nil {
-		p.noPrefixParseFnError(p.curToken.Type)
+		// I really don't understand why this is a function call in the book.
+		//	p.noPrefixParseFnError(p.curToken.Type)
+		msg := fmt.Sprintf("no prefix parse function for %s found", p.curToken.Type)
+		p.errors = append(p.errors, msg)
 		return nil
 	}
 
