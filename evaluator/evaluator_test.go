@@ -14,7 +14,8 @@ func TestEvalIntegerExpression(t *testing.T) {
 	}{
 		{"5", 5},
 		{"10", 10},
-		// {"-10", -10},
+		{"-5", -5},
+		{"-10", -10},
 	}
 
 	for _, tt := range tests {
@@ -35,6 +36,31 @@ func TestEvalBooleanExpression(t *testing.T) {
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)
 		testBooleanObject(t, evaluated, tt.expected)
+	}
+}
+
+func TestBangOperator(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected bool
+	}{
+		{"!true", false},
+		{"!false", true},
+		{"!5", false}, // bang operator returns false for any operand that is not false or null
+		{"!!true", true},
+		{"!!false", false},
+		{"!!5", true},
+		// what about...
+		// {"!0", true},
+		// {"!!0", false},
+		// not quite the same as JS then
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		if !testBooleanObject(t, evaluated, tt.expected) {
+			t.Logf("Bang operator test failed for input: %s", tt.input)
+		}
 	}
 }
 
