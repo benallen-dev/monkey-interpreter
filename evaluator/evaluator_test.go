@@ -62,7 +62,6 @@ func TestEvalBooleanExpression(t *testing.T) {
 		{"(1 < 2) == false", false},
 		{"(1 > 2) == true", false},
 		{"(1 > 2) == false", true},
-
 	}
 
 	for _, tt := range tests {
@@ -101,7 +100,7 @@ func TestBangOperator(t *testing.T) {
 func TestIfElseExpression(t *testing.T) {
 	tests := []struct {
 		input    string
-		expected interface{}
+		expected any
 	}{
 		{"if (true) { 10 }", 10},
 		{"if (false) { 10 }", nil},
@@ -124,6 +123,34 @@ func TestIfElseExpression(t *testing.T) {
 			if !testNullObject(t, evaluated) {
 				logInput(t, tt.input)
 			}
+		}
+	}
+}
+
+func TestReturnStatement(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int64 // ???
+	}{
+		{"return 10;", 10},
+		{"return 10; 9;", 10},
+		{"return 2 * 5; 9;", 10},
+		{"9; return 2 * 5; true;", 10},
+		{`
+			if (2 > 1) {
+				if (3 > 1) {
+					return 10;
+				}
+
+				return 1;
+			}
+			`, 10},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		if !testIntegerObject(t, evaluated, tt.expected) {
+			logInput(t, tt.input)
 		}
 	}
 }
