@@ -8,6 +8,7 @@ import (
 	"monkey/lexer"
 	"monkey/object"
 	"monkey/parser"
+	"os"
 )
 
 const PROMPT = ">> "
@@ -16,8 +17,13 @@ func Start(in io.Reader, out io.Writer) {
 	scanner := bufio.NewScanner(in)
 	env := object.NewEnvironment()
 
+	// Only prompt when reading from standard input
+	prompt := in == os.Stdin
+
 	for {
-		fmt.Fprintf(out, PROMPT)
+		if prompt {
+			fmt.Fprintf(out, PROMPT)
+		}
 		scanned := scanner.Scan()
 		if !scanned {
 			return
