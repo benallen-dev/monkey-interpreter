@@ -107,7 +107,7 @@ type BlockStatement struct {
 	Statements []Statement
 }
 
-func (bs *BlockStatement) statementNode() {}
+func (bs *BlockStatement) statementNode()       {}
 func (bs *BlockStatement) TokenLiteral() string { return bs.Token.Literal }
 func (bs *BlockStatement) String() string {
 	var out bytes.Buffer
@@ -237,10 +237,19 @@ func (fl *FunctionLiteral) String() string {
 	return out.String()
 }
 
+type StringLiteral struct {
+	Token token.Token // "?
+	Value string
+}
+
+func (sl *StringLiteral) expressionNode()      {}
+func (sl *StringLiteral) TokenLiteral() string { return sl.Token.Literal }
+func (sl *StringLiteral) String() string       { return sl.Token.Literal }
+
 type CallExpression struct {
-	Token token.Token // The '(' token
-	Function Expression
-	Arguments[]Expression
+	Token     token.Token // The '(' token
+	Function  Expression
+	Arguments []Expression
 }
 
 func (ce *CallExpression) expressionNode()      {}

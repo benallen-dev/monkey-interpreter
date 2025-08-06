@@ -302,6 +302,20 @@ func TestFunctionApplication(t *testing.T) {
 	}
 }
 
+func TestStringLiteral(t *testing.T) {
+	input := `"Hello World!"`
+
+	evaluated := testEval(input)
+	str, ok := evaluated.(*object.String)
+	if !ok {
+		t.Fatalf("object is not String. got=%T (%+v)", evaluated, evaluated)
+	}
+
+	if str.Value != "Hello World!" {
+		t.Errorf("String has wrong value. got=%q", str.Value)
+	}
+}
+
 func logInput(t *testing.T, input string) {
 	t.Logf("\t\033[38;5;238minput: \033[38;5;240m%s\033[0m", input)
 }
