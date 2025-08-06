@@ -293,10 +293,13 @@ func evalStringInfixExpression(operator string, left, right object.Object) objec
 	leftVal := left.(*object.String).Value
 	rightVal := right.(*object.String).Value
 
-	// TODO: Add (in)equality check
 	switch operator {
 	case "+":
 		return &object.String{Value: leftVal + rightVal}
+	case "==": // just using Go's string comparison like this feels like cheating, but it gets the job done
+		return &object.Boolean{ Value: leftVal == rightVal} 
+	case "!=":
+		return &object.Boolean{ Value: leftVal != rightVal}
 	default:
 		return newError("unknown operator: %s %s %s", left.Type(), operator, right.Type())
 	}

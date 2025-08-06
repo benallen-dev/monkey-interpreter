@@ -334,6 +334,35 @@ func TestStringConcatenation(t *testing.T) {
 	}
 }
 
+func TestStringComparison(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected bool
+	}{
+		{`"Hello" == "Hello"`, true},
+		{`"Hello" == "World"`, false},
+		{`"Hello" != "World"`, true},
+		{`"Hello" != "Hello"`, false},
+		{`"" == ""`, true},
+		{`"" != ""`, false},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		result, ok := evaluated.(*object.Boolean)
+		if !ok {
+			t.Errorf("object is not Boolean. got=%T (%+v)", evaluated, evaluated)
+			logInput(t, tt.input)
+			continue
+		}
+
+		if result.Value != tt.expected {
+			t.Errorf("Boolean has wrong value. got=%t, want=%t", result.Value, tt.expected)
+			logInput(t, tt.input)
+		}
+	}
+}
+
 func logInput(t *testing.T, input string) {
 	t.Logf("\t\033[38;5;238minput: \033[38;5;240m%s\033[0m", input)
 }
