@@ -7,6 +7,13 @@ import (
 )
 
 var builtins = map[string]*object.Builtin{
+	"exit": {
+		Fn: func(args ...object.Object) object.Object {
+			fmt.Println("Exiting REPL")
+			os.Exit(0)
+			return NULL // apparently not unreachable code
+		},
+	},
 	"len": {
 		Fn: func(args ...object.Object) object.Object {
 			if len(args) != 1 {
